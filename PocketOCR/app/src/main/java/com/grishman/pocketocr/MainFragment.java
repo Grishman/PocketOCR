@@ -1,12 +1,22 @@
 package com.grishman.pocketocr;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.grishman.pocketocr.data.OCRContract;
+import com.grishman.pocketocr.data.OCRDbHelper;
+import com.grishman.pocketocr.data.ScanProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,9 +25,11 @@ import java.util.List;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private ArrayAdapter<String> mRecognitionAdapter;
+    private ScanAdapter mforecastAdapter = null;
+    private ListView mListView;
 
     public MainFragment() {
     }
@@ -26,6 +38,13 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        OCRDbHelper helper = new OCRDbHelper(getActivity());
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues initialValues = new ContentValues();
+        initialValues.put(OCRContract.ScanEntry.COLUMN_LANG, "ENG");
+        //initialValues.put(DatabaseOpenHelper.DESCRIPTION, "Test2 test2");
+        getActivity().getContentResolver().insert(OCRContract.ScanEntry.CONTENT_URI, initialValues);
+        //db.insert(DATABASE_TABLE, null, initialValues);
         // Create some dummy data for the ListView.  Here's a sample weekly forecast 
         String[] dummyData = {
                 "Mon 6/23 - Sunny - 31/17",
@@ -50,7 +69,36 @@ public class MainFragment extends Fragment {
 
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        mforecastAdapter = new ScanAdapter(getActivity(), null, 0);
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        // Get a reference to the ListView, and attach this adapter to it.
+        mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        mListView.setAdapter(mforecastAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
+            @Override
+            public void onItemClick(AdapterView adapterView, View view, int position, long l) {
+                // CursorAdapter returns a cursor at the correct position for getItem(), or null
+                // if it cannot seek to that position.
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                if (cursor != null) {
+                    String locationSetting = Utility.getPreferredLocation(getActivity());
+//                    Intent intent = new Intent(getActivity(), DetailsActivity.class)
+//                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
+                    ((Callback) getActivity())
+                            .onItemSelected(OCRContract.ScanEntry.buildScanFromID( cursor.getLong(COL_WEATHER_DATE)
+                            ));
+//                    startActivity(intent);
+                }
+            }
+        });
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
+            // The listview probably hasn't even been populated yet. Actually perform the
+            // swapout in onLoadFinished.
+            mPosition = savedInstanceState.getInt(SELECTED_KEY);
+        }
+        mforecastAdapter.setUseTodayLayout(mUseTodayLayout);
+        return rootView;
 
         // Get a reference to the ListView, and attach this adapter to it. 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_recognitions);
@@ -58,5 +106,20 @@ public class MainFragment extends Fragment {
 
 
         return rootView;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

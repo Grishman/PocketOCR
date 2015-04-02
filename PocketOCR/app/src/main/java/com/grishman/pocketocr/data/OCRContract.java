@@ -16,6 +16,7 @@
 package com.grishman.pocketocr.data;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.text.format.Time;
@@ -52,11 +53,21 @@ public class OCRContract {
         return time.setJulianDay(julianDay);
     }
 
+
+
     /* Inner class that defines the table contents of the scan table */
     public static final class ScanEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_SCAN).build();
+
+        public static Uri buildScanFromID(long id) {
+            return CONTENT_URI.buildUpon()
+                    .appendPath(Long.toString(id)).build();
+        }
+        public static Uri buildScanUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SCAN;
@@ -91,5 +102,13 @@ public class OCRContract {
 
         // File name for the multi-page documents such as PDF, TIFF, DJVU.  Stored as str.
         public static final String COLUMN_FILE_NAME = "file_name";
+
+        public static long getIDFromUri(Uri uri) {
+            String id = uri.getQueryParameter(ScanEntry._ID);
+            if (null != id && id.length() > 0)
+                return Long.parseLong(id);
+            else
+                return 0;
+        }
     }
 }
