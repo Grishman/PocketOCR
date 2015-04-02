@@ -7,5 +7,6 @@
     <string name="title_activity_splash_screen">SplashScreenActivity</string>
     <string name="title_activity_detail_view">DetailViewActivity</string>
     <string name="title_activity_preview">PreviewActivity</string>
+    <string name="content_authority">com.grishman.pocketocr</string>
 
 </resources>

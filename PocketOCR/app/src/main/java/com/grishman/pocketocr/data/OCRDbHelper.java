@@ -44,7 +44,7 @@ public class OCRDbHelper extends SQLiteOpenHelper {
 
                 // the ID of the location entry associated with this weather data
                 ScanEntry.COLUMN_FILE_ID + " INTEGER, " +
-                ScanEntry.COLUMN_DATE + " INTEGER NOT NULL, " +
+                ScanEntry.COLUMN_DATE + " INTEGER , " +
                 ScanEntry.COLUMN_DESCRIPTION + " TEXT, " +
                 ScanEntry.COLUMN_LANG + " INTEGER NOT NULL," +
 
