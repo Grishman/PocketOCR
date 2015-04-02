@@ -3,6 +3,7 @@ package com.grishman.pocketocr;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -30,6 +31,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     private ArrayAdapter<String> mRecognitionAdapter;
     private ScanAdapter mforecastAdapter = null;
     private ListView mListView;
+    private int mPosition = ListView.INVALID_POSITION;
 
     public MainFragment() {
     }
@@ -70,7 +72,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         mforecastAdapter = new ScanAdapter(getActivity(), null, 0);
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        //View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         // Get a reference to the ListView, and attach this adapter to it.
         mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
         mListView.setAdapter(mforecastAdapter);
@@ -82,11 +84,11 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                 // if it cannot seek to that position.
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
-                    String locationSetting = Utility.getPreferredLocation(getActivity());
+//                    String locationSetting = Utility.getPreferredLocation(getActivity());
 //                    Intent intent = new Intent(getActivity(), DetailsActivity.class)
 //                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
                     ((Callback) getActivity())
-                            .onItemSelected(OCRContract.ScanEntry.buildScanFromID( cursor.getLong(COL_WEATHER_DATE)
+                            .onItemSelected(OCRContract.ScanEntry.buildScanFromID(cursor.getLong(COL_WEATHER_DATE)
                             ));
 //                    startActivity(intent);
                 }
@@ -115,11 +117,28 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
+        mforecastAdapter.swapCursor(data);
+        if (mPosition != ListView.INVALID_POSITION) {
+            // If we don't need to restart the loader, and there's a desired position to restore
+            // to, do so now.
+            mListView.smoothScrollToPosition(mPosition);
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        mforecastAdapter.swapCursor(data);
     }
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(Uri dateUri);
+    }
+
 }
