@@ -109,6 +109,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
         // Get a reference to the ListView, and attach this adapter to it.
         mListView = (ListView) rootView.findViewById(R.id.listview_recognitions);
         mListView.setAdapter(mforecastAdapter);
+//        mListView.setEmptyView(rootView.findViewById(R.id.empty_view));
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
