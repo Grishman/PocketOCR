@@ -8,15 +8,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 import com.grishman.pocketocr.data.OCRContract.ScanEntry;
-
-import static com.grishman.pocketocr.data.OCRContract.normalizeDate;
 
 public class ScanProvider extends ContentProvider {
 
     // The URI Matcher used by this content provider.
     private static final UriMatcher sUriMatcher = buildUriMatcher();
+    private static final String LOG_TAG = ScanProvider.class.getSimpleName();
     private OCRDbHelper mOpenHelper;
 
     static final int SCAN = 100;
@@ -105,15 +105,15 @@ public class ScanProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(Uri uri, ContentValues contentValues) {
+        Log.d(LOG_TAG, "insert, " + uri.toString());
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         Uri returnUri;
 
         switch (match) {
             case SCAN: {
-                //normalizeDate(values);
-                long _id = db.insert(ScanEntry.TABLE_NAME, null, values);
+                long _id = db.insert(ScanEntry.TABLE_NAME, null, contentValues);
                 if (_id > 0)
                     returnUri = ScanEntry.buildScanUri(_id);
                 else
@@ -124,7 +124,8 @@ public class ScanProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
-        db.close();
+        // Fix problem
+//        db.close();
         return returnUri;
     }
 

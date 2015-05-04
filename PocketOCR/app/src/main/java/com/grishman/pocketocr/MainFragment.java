@@ -1,6 +1,7 @@
 package com.grishman.pocketocr;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -20,16 +21,12 @@ import android.widget.ListView;
 import com.grishman.pocketocr.data.OCRContract;
 import com.grishman.pocketocr.data.OCRDbHelper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * A placeholder fragment containing a simple view.
  */
 public class MainFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final int LOADER_ID = 1 ;
+    private static final int LOADER_ID = 1;
     private ArrayAdapter<String> mRecognitionAdapter;
     private ScanAdapter mforecastAdapter = null;
     private ListView mListView;
@@ -60,27 +57,35 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     public static final int COL_DESC = 3;
     public static final int COL_LANG = 4;
     public static final int COL_PROGRESS = 5;
-    public static final int COL_RESULT_TEXT= 6;
+    public static final int COL_RESULT_TEXT = 6;
     public static final int COL_STATUS = 7;
     public static final int COL_URI = 8;
-    public static final int COL_PAGE= 9;
+    public static final int COL_PAGE = 9;
     public static final int COL_FILENAME = 10;
+
     public MainFragment() {
     }
 
-
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        OCRDbHelper helper = new OCRDbHelper(getActivity());
-        SQLiteDatabase db = helper.getWritableDatabase();
+    private void fakeData() {
         ContentValues initialValues = new ContentValues();
+        initialValues.put(OCRContract.ScanEntry.COLUMN_DESCRIPTION, "Test1 title");
         initialValues.put(OCRContract.ScanEntry.COLUMN_LANG, "ENG");
-        //getActivity().getContentResolver().insert(OCRContract.ScanEntry.CONTENT_URI, initialValues);
-        //db.insert(DATABASE_TABLE, null, initialValues);
-        // Create some dummy data for the ListView.  Here's a sample weekly forecast 
+
+        getActivity().getApplicationContext().getContentResolver().insert(OCRContract.ScanEntry.CONTENT_URI, initialValues);
+    }
+
+        @Override
+        public View onCreateView (LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState){
+
+            OCRDbHelper helper = new OCRDbHelper(getActivity());
+            SQLiteDatabase db = helper.getWritableDatabase();
+//            fakeData();
+//            ContentValues initialValues = new ContentValues();
+//            initialValues.put(OCRContract.ScanEntry.COLUMN_LANG, "ENG");
+//            getActivity().getApplicationContext().getContentResolver().insert(OCRContract.ScanEntry.CONTENT_URI, initialValues);
+//            //db.insert(DATABASE_TABLE, null, initialValues);
+            // Create some dummy data for the ListView.  Here's a sample weekly forecast 
 //        String[] dummyData = {
 //                "Mon 6/23 - Sunny - 31/17",
 //                "Tue 6/24 - Foggy - 21/8",
@@ -103,100 +108,101 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
 //                        weekForecast);
 
 
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        mforecastAdapter = new ScanAdapter(getActivity(), null, 0);
-        //View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        // Get a reference to the ListView, and attach this adapter to it.
-        mListView = (ListView) rootView.findViewById(R.id.listview_recognitions);
-        mListView.setAdapter(mforecastAdapter);
+            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            mforecastAdapter = new ScanAdapter(getActivity(), null, 0);
+            //View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            // Get a reference to the ListView, and attach this adapter to it.
+            mListView = (ListView) rootView.findViewById(R.id.listview_recognitions);
+            mListView.setAdapter(mforecastAdapter);
 //        mListView.setEmptyView(rootView.findViewById(R.id.empty_view));
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-            @Override
-            public void onItemClick(AdapterView adapterView, View view, int position, long l) {
-                // CursorAdapter returns a cursor at the correct position for getItem(), or null
-                // if it cannot seek to that position.
-                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
-                if (cursor != null) {
+                @Override
+                public void onItemClick(AdapterView adapterView, View view, int position, long l) {
+                    // CursorAdapter returns a cursor at the correct position for getItem(), or null
+                    // if it cannot seek to that position.
+                    Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                    if (cursor != null) {
 //                    String locationSetting = Utility.getPreferredLocation(getActivity());
 //                    Intent intent = new Intent(getActivity(), DetailsActivity.class)
 //                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
-                    ((Callback) getActivity())
-                            .onItemSelected(OCRContract.ScanEntry.buildScanFromID(cursor.getLong(COL_SCAN_ID)
-                            ));
+                        ((Callback) getActivity())
+                                .onItemSelected(OCRContract.ScanEntry.buildScanFromID(cursor.getLong(COL_SCAN_ID)
+                                ));
 //                    startActivity(intent);
+                    }
                 }
+            });
+            if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
+                // The listview probably hasn't even been populated yet. Actually perform the
+                // swapout in onLoadFinished.
+                mPosition = savedInstanceState.getInt(SELECTED_KEY);
             }
-        });
-        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
-            // The listview probably hasn't even been populated yet. Actually perform the
-            // swapout in onLoadFinished.
-            mPosition = savedInstanceState.getInt(SELECTED_KEY);
+            //mforecastAdapter.setUseTodayLayout(mUseTodayLayout);
+            return rootView;
+
+            // Get a reference to the ListView, and attach this adapter to it. 
+            // ListView listView = (ListView) rootView.findViewById(R.id.listview_recognitions);
+            // listView.setAdapter(mRecognitionAdapter);
+
+
+            //return rootView;
         }
-        //mforecastAdapter.setUseTodayLayout(mUseTodayLayout);
-        return rootView;
-
-        // Get a reference to the ListView, and attach this adapter to it. 
-       // ListView listView = (ListView) rootView.findViewById(R.id.listview_recognitions);
-       // listView.setAdapter(mRecognitionAdapter);
-
-
-        //return rootView;
-    }
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        getLoaderManager().initLoader(LOADER_ID, null, this);
-        super.onActivityCreated(savedInstanceState);
-    }
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        if (mPosition != ListView.INVALID_POSITION) {
-            outState.putInt(SELECTED_KEY, mPosition);
+        @Override
+        public void onActivityCreated (@Nullable Bundle savedInstanceState){
+            getLoaderManager().initLoader(LOADER_ID, null, this);
+            super.onActivityCreated(savedInstanceState);
         }
-        super.onSaveInstanceState(outState);
-    }
+        @Override
+        public void onSaveInstanceState (Bundle outState){
+            if (mPosition != ListView.INVALID_POSITION) {
+                outState.putInt(SELECTED_KEY, mPosition);
+            }
+            super.onSaveInstanceState(outState);
+        }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        @Override
+        public Loader<Cursor> onCreateLoader ( int id, Bundle args){
 
 // Sort order: Ascending, by id.
-        String sortOrder = OCRContract.ScanEntry._ID + " ASC";
-        Uri weatherForLocationUri = OCRContract.ScanEntry.CONTENT_URI;
+            String sortOrder = OCRContract.ScanEntry._ID + " ASC";
+            Uri weatherForLocationUri = OCRContract.ScanEntry.CONTENT_URI;
 // Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
 // null, null, null, sortOrder);
-        return new CursorLoader(getActivity(),
-                weatherForLocationUri,
-                SCAN_COLUMNS,
-                null,
-                null,
-                sortOrder);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mforecastAdapter.swapCursor(data);
-        if (mPosition != ListView.INVALID_POSITION) {
-            // If we don't need to restart the loader, and there's a desired position to restore
-            // to, do so now.
-            mListView.smoothScrollToPosition(mPosition);
+            return new CursorLoader(getActivity(),
+                    weatherForLocationUri,
+                    SCAN_COLUMNS,
+                    null,
+                    null,
+                    sortOrder);
         }
-    }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mforecastAdapter.swapCursor(null);
-    }
+        @Override
+        public void onLoadFinished (Loader < Cursor > loader, Cursor data){
+            mforecastAdapter.swapCursor(data);
+            if (mPosition != ListView.INVALID_POSITION) {
+                // If we don't need to restart the loader, and there's a desired position to restore
+                // to, do so now.
+                mListView.smoothScrollToPosition(mPosition);
+            }
+        }
 
-    /**
-     * A callback interface that all activities containing this fragment must
-     * implement. This mechanism allows activities to be notified of item
-     * selections.
-     */
-    public interface Callback {
+        @Override
+        public void onLoaderReset (Loader < Cursor > loader) {
+            mforecastAdapter.swapCursor(null);
+        }
+
         /**
-         * DetailFragmentCallback for when an item has been selected.
+         * A callback interface that all activities containing this fragment must
+         * implement. This mechanism allows activities to be notified of item
+         * selections.
          */
-        public void onItemSelected(Uri dateUri);
+        public interface Callback {
+            /**
+             * DetailFragmentCallback for when an item has been selected.
+             */
+            public void onItemSelected(Uri dateUri);
+        }
+
     }
 
-}

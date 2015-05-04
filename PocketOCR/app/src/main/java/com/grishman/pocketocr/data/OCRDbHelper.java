@@ -46,7 +46,7 @@ public class OCRDbHelper extends SQLiteOpenHelper {
                 ScanEntry.COLUMN_FILE_ID + " INTEGER, " +
                 ScanEntry.COLUMN_DATE + " INTEGER , " +
                 ScanEntry.COLUMN_DESCRIPTION + " TEXT, " +
-                ScanEntry.COLUMN_LANG + " INTEGER NOT NULL," +
+                ScanEntry.COLUMN_LANG + " TEXT NOT NULL," +
 
                 ScanEntry.COLUMN_PROGRESS + " REAL, " +
                 ScanEntry.COLUMN_RESULT_TEXT + " TEXT, " +
